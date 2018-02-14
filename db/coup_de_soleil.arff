@@ -1,0 +1,17 @@
+@relation coup_de_soleil
+
+@attribute cheveux {blond, brun, roux}
+@attribute taille {petite, moyenne, grande}
+@attribute poids {leger, moyen, lourd}
+@attribute creme {oui, non}
+@attribute coup_de_soleil {oui, non}
+
+@data
+blond,moyenne,leger,non,oui
+blond,grande,moyen,oui,non
+brun,petite,moyen,oui,non
+blond,petite,moyen,non,oui
+roux,moyenne,lourd,non,oui
+brun,grande,lourd,non,non
+brun,moyenne,lourd,non,non
+blond,petite,leger,oui,non
