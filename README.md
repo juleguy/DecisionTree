@@ -5,6 +5,7 @@ Ce programme a été réalisé en binôme avec Jonathan Deramaix dans le cadre d
 ## Dépendances
 Ce programme nécessite les librairies suivantes : pandas, arff2pandas, sklearn et scipy. Elles sont installables en utilisant la commande pip. Pour pouvoir exécuter le programme sans installer les librairies, on peut utiliser l'environnement virtuel python inclus :
 
+#### Utilisation de l'environnement virtuel python :
 _./venv/bin/python3.5 dtbuild.py --arguments_
 
 ## Génération de règles
