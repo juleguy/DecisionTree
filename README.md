@@ -2,10 +2,14 @@
 
 Ce programme a été réalisé en binôme avec Jonathan Deramaix dans le cadre du module « Apprentissage artificiel » de notre Master I en Informatique à l'Université d'Angers (2017-2018).
 
+## Dépendances
+Ce programme nécessite les librairies suivantes : pandas, arff2pandas, sklearn et scipy. Elles sont installables en utilisant la commande pip. Pour pouvoir exécuter le programme sans installer les librairies, on peut utiliser l'environnement virtuel inclus :
+
+_./venv/bin/python3.5 dtbuild.py --arguments
 
 ## Génération de règles
 
-Il implémente un algorithme permettant de générer un certain nombre de règles pour prédire la valeur d'un attribut cible dans un tableau de données d'attributs nominaux au format arff.
+Ce programme implémente un algorithme permettant de générer un certain nombre de règles pour prédire la valeur d'un attribut cible dans un tableau de données d'attributs nominaux au format arff.
 
 #### Génération de règles sur le jeu de données weather_nominal :
 _python dtbuild.py --file db/weather_nominal.arff_ 
@@ -44,6 +48,6 @@ L'algorithme va par défaut ignorer les lignes qui contiennent des valeurs manqu
 #### Stratégie par défaut pour gérer les valeurs manquantes
 _python dtbuild.py --file db/vote.arff --missing-values ignore -v_
 
-#### Stratégie remplacant les valeurs manquantes de façon aléatoire
+#### Stratégie remplaçant les valeurs manquantes de façon aléatoire
 _python dtbuild.py --file db/vote.arff --missing-values randomly_replace -v_
 
