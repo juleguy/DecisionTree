@@ -17,7 +17,11 @@ class Literal:
 class Rule:
     """ Class whose role is to store a rule and to print it"""
 
-    def __init__(self, premises=[], conclusion=None):
+    def __init__(self, premises=None, conclusion=None):
+
+        if premises is None:
+            premises = []
+
         self.premises = premises
         self.conclusion = conclusion
 
@@ -27,12 +31,20 @@ class Rule:
     def set_conclusion(self, conclusion):
         self.conclusion = conclusion
 
+    def fits_row(self, row):
+        """ Returns true is the given row fits the rule """
+        for premise in self.premises:
+            if premise.value != row.get(premise.attribute, ""):
+                return False
+
+        return True
+
     def __str__(self):
         out = "IF "
         for i in range(len(self.premises)):
             out += str(self.premises[i]) + " "
 
-            if 0 < i < len(self.premises) - 1:
+            if 0 <= i < len(self.premises) - 1:
                 out += "AND "
 
         out += "THEN  "
