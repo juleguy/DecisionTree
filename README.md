@@ -44,7 +44,7 @@ _python dtbuild.py --file db/mushroom_train.arff --mode prediction -v --target-c
 
 ## Stratégie pour gérer les valeurs manquantes
 
-L'algorithme va par défaut ignorer les lignes qui contiennent des valeurs manquantes. Une autre stratégie disponible consiste à remplacer les valeurs manquantes par une des valeurs possibles de l'attribut.
+L'algorithme va par défaut ignorer les lignes qui contiennent des valeurs manquantes. Une autre stratégie disponible consiste à remplacer les valeurs manquantes par une des valeurs possibles de l'attribut. Une dernière stratégie remplace les valeurs manquantes par la valeur la plus présente pour l'attribut dans la classe courante (positive ou négative) et dans le jeu courant (jeu d'entraînement ou jeu de test).
 
 #### Stratégie par défaut pour gérer les valeurs manquantes :
 _python dtbuild.py --file db/vote.arff --missing-values ignore -v_
