@@ -52,3 +52,7 @@ _python dtbuild.py --file db/vote.arff --missing-values ignore -v_
 #### Stratégie remplaçant les valeurs manquantes de façon aléatoire :
 _python dtbuild.py --file db/vote.arff --missing-values randomly_replace -v_
 
+#### Stratégie remplaçant les valeurs manquantes par la valeur de l'attribut possédant le plus d'occurences pour la classe de l'exemple :
+_python dtbuild.py --file db/vote.arff --missing-values most_common_replace -v_
+
+
