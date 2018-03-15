@@ -46,13 +46,13 @@ _python dtbuild.py --file db/mushroom_train.arff --mode prediction -v --target-c
 
 L'algorithme va par défaut ignorer les lignes qui contiennent des valeurs manquantes. Une autre stratégie disponible consiste à remplacer les valeurs manquantes par une des valeurs possibles de l'attribut. Une dernière stratégie remplace les valeurs manquantes par la valeur la plus présente pour l'attribut dans la classe courante (positive ou négative) et dans le jeu courant (jeu d'entraînement ou jeu de test).
 
-#### Stratégie par défaut pour gérer les valeurs manquantes :
-_python dtbuild.py --file db/vote.arff --missing-values ignore -v_
+#### Stratégie par défaut pour gérer les valeurs manquantes, en mode prédiction :
+_python dtbuild.py --file db/vote.arff --missing-values ignore --mode prediction -v_
 
-#### Stratégie remplaçant les valeurs manquantes de façon aléatoire :
-_python dtbuild.py --file db/vote.arff --missing-values randomly_replace -v_
+#### Stratégie remplaçant les valeurs manquantes de façon aléatoire, en mode prédiction :
+_python dtbuild.py --file db/vote.arff --missing-values randomly_replace --mode prediction -v_
 
-#### Stratégie remplaçant les valeurs manquantes par la valeur de l'attribut possédant le plus d'occurences pour la classe de l'exemple :
-_python dtbuild.py --file db/vote.arff --missing-values most_common_replace -v_
+#### Stratégie remplaçant les valeurs manquantes par la valeur de l'attribut possédant le plus d'occurences pour la classe de l'exemple, en mode prédiction :
+_python dtbuild.py --file db/vote.arff --missing-values most_common_replace --mode prediction -v_
 
 
