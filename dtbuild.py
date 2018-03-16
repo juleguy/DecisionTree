@@ -14,7 +14,8 @@ parser.add_argument("-m", "--mode", help="mode of the program : 'training_only' 
 parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
 parser.add_argument("-missing", "--missing-values",
-                    help="strategy to adopt in case of missing values : 'ignore' (default) or 'randomly_replace'",
+                    help="strategy to adopt in case of missing values : 'ignore' (default), 'randomly_replace'\
+                    or 'most_common_replace'",
                     default='ignore')
 
 parser.add_argument("--target-col", help="name of the column that contains the target class name")
@@ -44,7 +45,8 @@ except NotFoundTargetCol:
     print("The target col name or the target col value is incorrect")
     exit(1)
 except UnknownMissingValuesStrategyException:
-    print("The strategy to manage the missing values does not exist ('ignore' or 'randomly_replace' are available)")
+    print("The strategy to manage the missing values does not exist ('ignore', 'randomly_replace' or\
+     'most_common_replace' are available)")
     exit(1)
 
 if args.verbose:

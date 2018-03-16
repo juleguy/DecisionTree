@@ -1,0 +1,40 @@
+\documentclass[]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+
+\usepackage[T1]{fontenc}
+\usepackage[hidelinks]{hyperref}
+
+
+%Géométrie des pages
+\usepackage{geometry}
+\geometry{hmargin=3cm,vmargin=3cm}
+
+%opening
+\title{Projet Apprentissage artificiel\\
+Présentation des choix d'implémentation}
+\author{Jonathan Deramaix\\
+Jules Leguy}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Données}
+
+\subsection{Extraction des données}
+
+\par Le programme utilise les DataFrames de la librairie Pandas pour stocker les données, et utilise la librairie arff2pandas pour convertir les fichiers arff en tableaux Pandas. L'intérêt des DataFrames de Pandas est qu'elles permettent d'itérer facilement sur les colonnes et les lignes, à partir des index ou des noms.
+
+\subsection{Représentation des données}
+
+\subsubsection{Tableaux de données}
+
+\par Une fois les données chargées dans une première DataFrame pandas, on extrait les valeurs nominales possibles pour chaque attribut (arff2pandas les concatène au nom de la colonne du tableau) et on stocke ces valeurs dans un dictionnaire ayant les attributs comme clés et la liste des valeurs possibles comme valeurs.
+\par À partir du tableau initial, on créé un tableau des exemples pour chaque classe (positive ou négative), qu'utiliseront ensuite l'algorithme de couverture séquentielle pour générer les règles. Si le programme est en mode prédiction, on créé également deux tableaux composant le jeu de test. Ces tableaux sont créés en utilisant la bibliothèque scikit-learn, qui permet de séparer facilement le jeu de données en un jeu d'entraînement (80\% des données) et un jeu de test (20\% des données). Cette séparation est aléatoire mais utilise une graine aléatoire fixe afin que les tableaux soient toujours identiques pour une entrée donnée.
+
+\subsubsection{•}
+
+\end{document}
