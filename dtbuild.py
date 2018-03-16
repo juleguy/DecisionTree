@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
-from src.foilprop import FoilProp, NotFoundTargetCol
-from src.missingvaluesstrategy import UnknownMissingValuesStrategyException
+from foilprop import FoilProp, NotFoundTargetCol
+from missingvaluesstrategy import UnknownMissingValuesStrategyException
 import argparse
 
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -24,6 +24,9 @@ parser.add_argument("--target-class", help="name of the target class")
 
 args = parser.parse_args()
 
+if args.file is None:
+    print("No file provided (argument -f or --file)")
+    exit(1)
 
 # Creating the computing object
 foilProp = FoilProp(args.verbose)

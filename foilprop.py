@@ -2,11 +2,12 @@ from math import log
 
 import pandas
 from arff2pandas import a2p
-from src.logic import Literal, Rule
+from logic import Literal, Rule
 from abc import ABC, abstractmethod
 from sklearn.model_selection import train_test_split
+from random import Random
 
-from src.missingvaluesstrategy import MissingValuesStrategyBuilder
+from missingvaluesstrategy import MissingValuesStrategyBuilder
 
 
 class AbstractFoilProp(ABC):
@@ -194,12 +195,19 @@ class FoilProp(AbstractFoilProp):
         # Extracting all the literals from the attributes dictionary
         literals = []
         for attribute, values_list in self._attributes_dictionary.items():
-            if attribute != self.target_col_name:
+            if attribute != self._target_col_name:
                 for value in values_list:
                     literals.append(Literal(attribute, value))
 
+        initial_size = len(df_pos)
+
+        print()
+
         # Main loop : while all the positive examples haven't been processed
         while not df_pos.empty:
+
+            if self._verbose:
+                print("Computed : "+str(((initial_size-(len(df_pos)))/initial_size)*100)+" %")
 
             # Creating a empty rule
             current_rule = Rule()
@@ -210,6 +218,7 @@ class FoilProp(AbstractFoilProp):
 
             # Internal loop : while all the negative example haven't been put aside
             while not df_neg2.empty:
+
                 # Looking for the literal with the best gain
                 best_literal = self._best_gain_literal(literals, df_pos2, df_neg2)
 
@@ -223,14 +232,16 @@ class FoilProp(AbstractFoilProp):
                 df_neg2 = df_neg2[df_neg2[best_literal.attribute] == best_literal.value]
 
             # Adding the new rule to the collection of rules
-            conclusion = Literal(self.target_col_name,
-                                 self._attributes_dictionary.get(self.target_col_name)[self.target_col_value_index])
+            conclusion = Literal(self._target_col_name,
+                                 self._attributes_dictionary.get(self._target_col_name)[self._target_col_value_index])
 
             current_rule.set_conclusion(conclusion)
             self._rules.append(current_rule)
 
             # Removing from df_pos the examples satisfying the rule
-            df_pos = df_pos[df_pos[best_literal.attribute] != best_literal.value]
+            for index_row, row in df_pos.iterrows():
+                if current_rule.fits_row(row):
+                    df_pos.drop(index_row, inplace=True)
 
         print()
         print("Extracted rules : ")
@@ -292,11 +303,54 @@ class FoilProp(AbstractFoilProp):
                     max_gain = computed_gain
                     best_literal = literals_list[i]
 
-            # If all the gains were None (not computable), returning the first literal as best
+            # If all the gains were None (not computable), returning a random literal
             if max_gain is None:
-                best_literal = literals_list[0]
+                best_literal = Random().choose(literals_list)
+                print("max gain is none, returning "+str(best_literal))
+
+            # Managing the case where all the gains = 0
+            # This means that the neg and pos contains line that are identical except for one or more attributes that
+            # are exactly symmetrical
+            #
+            # ex :
+            #
+            # pos = a b c d
+            #       e f g h
+            # neg = a b c h
+            #       e f g d
+            #
+            # To determine the literal that will unlock the situation, we first compute the two rows that are the most
+            # alike (that contain the most identical literals) and then the chosen literal is one of those that differ
+            # on the most alike lines
+            elif max_gain == 0:
+
+                max_similarity = 0
+                alike_row_pos = None
+                alike_row_neg = None
+
+                # Looking for the couple of rows with the best similarity
+                for index_pos, row_pos in df_pos.iterrows():
+                    for index_neg, row_neg in df_neg.iterrows():
+
+                        current_similarity = 0
+
+                        for col in df_pos.columns:
+                            if row_pos[col] == row_neg[col]:
+                                current_similarity = current_similarity + 1
+
+                        if current_similarity >= max_similarity:
+                            alike_row_pos = row_pos
+                            alike_row_neg = row_neg
+                            max_similarity = current_similarity
+
+                # Looking for the first literal that differ on the most alike rows
+                for col in df_pos.columns:
+                    if alike_row_pos[col] != alike_row_neg[col]:
+                        best_literal = Literal(col, alike_row_pos[col])
+                        break
 
         else:
+            print("Returning none because no literal found")
             best_literal = None  # Returning none if no literal has been found
 
         # Returning the literal with the best gain
@@ -310,16 +364,10 @@ class FoilProp(AbstractFoilProp):
         N = len(df_neg)
 
         # Computing p the number of positive examples satisfying L
-        p = 0
-        for index, row in df_pos.iterrows():
-            if row[L.attribute] == L.value:
-                p = p + 1
+        p = self._compute_effective_occurrence(L, df_pos)
 
         # Computing n the number of negative examples satisfying L
-        n = 0
-        for index, row in df_neg.iterrows():
-            if row[L.attribute] == L.value:
-                n = n + 1
+        n = self._compute_effective_occurrence(L, df_neg)
 
         # Computing the gain and returning it, if no division by zero is necessary
         if not (p == 0) and not (P == 0) and not (p + n == 0) and not (P + N == 0):
@@ -328,6 +376,17 @@ class FoilProp(AbstractFoilProp):
             gain = None
 
         return gain
+
+    def _compute_effective_occurrence(self, L, df):
+        """ Computes the value p or n of the gain computing """
+
+        # Computing k the number of occurences of a literal in a DataFrame
+        k = 0
+        for index, row in df.iterrows():
+            if row[L.attribute] == L.value:
+                k = k + 1
+
+        return k
 
     def _load_fields_from_file(self, filename, target_col_name, target_col_value, missing_values_strategy_str):
         """ Initializes all the fields according to the info read in the given file"""
@@ -357,9 +416,9 @@ class FoilProp(AbstractFoilProp):
         if target_col_name is None:
             # Supposing the target column is the last one
             target_index = len(self._col_names) - 1
-            self.target_col_name = self._col_names[target_index]
+            self._target_col_name = self._col_names[target_index]
         else:
-            self.target_col_name = target_col_name
+            self._target_col_name = target_col_name
             found_target_col = False
             for i, col_name in enumerate(self._col_names):
                 if col_name == target_col_name:
@@ -412,7 +471,7 @@ class FoilProp(AbstractFoilProp):
         # Creating the columns in the dataframes
         for col_name in self._col_names:
 
-            if col_name != self.target_col_name:
+            if col_name != self._target_col_name:
                 self._df_train_pos[col_name] = None
                 self._df_train_neg[col_name] = None
                 self._df_test_pos[col_name] = None
@@ -426,13 +485,12 @@ class FoilProp(AbstractFoilProp):
             df_train_set = df
 
         if target_col_value is None:
-            self.target_col_value_index = 0
+            self._target_col_value_index = 0
         else:
             found_target_index = False
-
-            for i, val in enumerate(self._attributes_dictionary[self.target_col_name]):
+            for i, val in enumerate(self._attributes_dictionary[self._target_col_name]):
                 if val == target_col_value:
-                    self.target_col_value_index = i
+                    self._target_col_value_index = i
                     found_target_index = True
                     break
 
@@ -442,19 +500,17 @@ class FoilProp(AbstractFoilProp):
         # Creating the Neg and Pos dataframes
         for index_row, row in df_train_set.iterrows():
 
-            new_row = {}
-
-            for indexCol, col_name in enumerate(df.columns):
-
-                if indexCol != target_index:
-                    new_row[col_name] = row[col_name]
-
             # Managing the missing values according to the current strategy
-            new_row = missing_values_strategy.transform(new_row, self._attributes_dictionary)
-
+            new_row = missing_values_strategy.transform(row, self._attributes_dictionary,
+                                                        df_train_set, self._target_col_name,
+                                                        self._target_col_value_index)
             if new_row is not None:
+
+                # Removing target attribute
+                new_row = new_row.drop(self._target_col_name)
+
                 # Adding the row to the right dataframe
-                if row[target_index] == self._attributes_dictionary[self.target_col_name][self.target_col_value_index]:
+                if row[target_index] == self._attributes_dictionary[self._target_col_name][self._target_col_value_index]:
                     self._df_train_pos = self._df_train_pos.append(new_row, ignore_index=True)
                 else:
                     self._df_train_neg = self._df_train_neg.append(new_row, ignore_index=True)
@@ -464,19 +520,19 @@ class FoilProp(AbstractFoilProp):
 
             for index_row, row in df_test_set.iterrows():
 
-                new_row = {}
-
-                for indexCol, col_name in enumerate(df.columns):
-
-                    if indexCol != target_index:
-                        new_row[col_name] = row[col_name]
-
                 # Managing the missing values according to the current strategy
-                new_row = missing_values_strategy.transform(new_row, self._attributes_dictionary)
-
+                new_row = missing_values_strategy.transform(row, self._attributes_dictionary,
+                                                            df_test_set, self._target_col_name,
+                                                            self._target_col_value_index,
+                                                            duplicates_allowed=True)
                 if new_row is not None:
+
+                    # Removing target attribute
+                    new_row = new_row.drop(self._target_col_name)
+
                     # Adding the row to the right dataframe
-                    if row[target_index] == self._attributes_dictionary[self.target_col_name][self.target_col_value_index]:
+                    if row[target_index] == \
+                            self._attributes_dictionary[self._target_col_name][self._target_col_value_index]:
                         self._df_test_pos = self._df_test_pos.append(new_row, ignore_index=True)
                     else:
                         self._df_test_neg = self._df_test_neg.append(new_row, ignore_index=True)
