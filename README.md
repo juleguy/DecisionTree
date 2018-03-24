@@ -63,7 +63,7 @@ python dtbuild.py --file db/vote.arff -v --mode prediction -threshold 5 -thresho
 
 #### Prédiction sur le jeu mushroom_train en utilisant un seuil de couverture de 10 règles avec un nombre d'essais consécutifs de 3
 ```shell
-python dtbuild.py --file db/vote.arff -v --mode prediction -threshold 10 -threshold-tries 3
+python dtbuild.py --file db/mushroom_train.arff -v --mode prediction -threshold 10 -threshold-tries 3
 ```
 
 ## Stratégie pour gérer les valeurs manquantes
