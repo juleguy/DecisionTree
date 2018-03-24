@@ -42,16 +42,29 @@ python dtbuild.py --file db/weather_nominal.arff --target-class no  --target-col
 
 L'algorithme offre également la possibilité de scinder automatiquement le jeu de données en un jeu d'entraînement et un jeu de test, de générer les règles à partir du jeu d'entraînement, et de prédire les valeurs du jeu de test. Il calcule ensuite la précision, le rappel et le score f1 de la prédiction.
 
-#### Prédiction sur le jeu vote.arff :
+#### Prédiction sur le jeu vote :
 ```shell
 python dtbuild.py --file db/vote.arff --mode prediction -v
 ```
 
-#### Prédiction sur le jeu mushroom_train.arff (traitement plus long) :
+#### Prédiction sur le jeu mushroom_train (traitement plus long) :
 ```shell
 python dtbuild.py --file db/mushroom_train.arff --mode prediction -v --target-class 1
 ```
 
+## Seuil de couverture
+
+Deux paramètres sont disponibles afin de ne pas enregistrer les règles en deçà d'un certain seuil de couverture, et d'arrêter prématurément l'algorithme d'apprentissage, afin de ne pas sur-ajuster le jeu d'entraînement. La couverture est exprimée en nombre d'exemples positifs couverts par une règle. Par défaut, le seuil est négatif et donc aucune règle n'est ignorée. Lorsque l'utilisateur spécifie un seuil, alors l'algorithme d'apprentissage s'arrête au bout de _n_ règles générées consécutivement et ayant une couverture inférieure au seuil, _n_ étant un paramètre spécifié par l'utilisateur et valant 5 par défaut. 
+
+#### Prédiction sur le jeu vote en utilisant un seuil de couverture de 5 règles avec un nombre d'essais consécutifs de 5
+```shell
+python dtbuild.py --file db/vote.arff -v --mode prediction -threshold 5 -threshold-tries 5
+```
+
+#### Prédiction sur le jeu mushroom_train en utilisant un seuil de couverture de 10 règles avec un nombre d'essais consécutifs de 3
+```shell
+python dtbuild.py --file db/mushroom_train.arff -v --mode prediction -threshold 10 -threshold-tries 3
+```
 
 ## Stratégie pour gérer les valeurs manquantes
 
