@@ -24,6 +24,7 @@ class Rule:
 
         self.premises = premises
         self.conclusion = conclusion
+        self.concerned_examples = 0
 
     def add_premise(self, premise):
         self.premises.append(premise)

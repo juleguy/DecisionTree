@@ -178,7 +178,8 @@ class FoilProp(AbstractFoilProp):
         super().__init__()
         self._verbose = verbose
 
-    def fit(self, filename, target_col_name=None, target_col_value=None, missing_values_strategy_str="ignore"):
+    def fit(self, filename, target_col_name=None,
+            target_col_value=None, missing_values_strategy_str="ignore", threshold=-1, threshold_tries=5):
 
         # Initialization of all the fields
         self.fields_reinitialization()
@@ -199,15 +200,18 @@ class FoilProp(AbstractFoilProp):
                 for value in values_list:
                     literals.append(Literal(attribute, value))
 
-        initial_size = len(df_pos)
+        initial_size = len(df_pos.index)
 
         print()
 
+        stop = False
+        consecutive_threshold_reached = 0
+
         # Main loop : while all the positive examples haven't been processed
-        while not df_pos.empty:
+        while not df_pos.empty and not stop:
 
             if self._verbose:
-                print("Computed : "+str(((initial_size-(len(df_pos)))/initial_size)*100)+" %")
+                print("Computed : "+str(((initial_size-(len(df_pos.index)))/initial_size)*100)+" %")
 
             # Creating a empty rule
             current_rule = Rule()
@@ -221,6 +225,9 @@ class FoilProp(AbstractFoilProp):
 
                 # Looking for the literal with the best gain
                 best_literal = self._best_gain_literal(literals, df_pos2, df_neg2)
+
+                if self._verbose:
+                    print("Chosen literal : "+str(best_literal))
 
                 # Adding the best literal as a premise of the currently built rule
                 current_rule.add_premise(best_literal)
@@ -236,18 +243,40 @@ class FoilProp(AbstractFoilProp):
                                  self._attributes_dictionary.get(self._target_col_name)[self._target_col_value_index])
 
             current_rule.set_conclusion(conclusion)
-            self._rules.append(current_rule)
+
+            concerned_number = 0
 
             # Removing from df_pos the examples satisfying the rule
             for index_row, row in df_pos.iterrows():
                 if current_rule.fits_row(row):
+                    concerned_number += 1
                     df_pos.drop(index_row, inplace=True)
+
+            current_rule.concerned_examples = concerned_number
+
+            # Testing if the rule's coverage is below the threshold
+            if concerned_number < threshold:
+                consecutive_threshold_reached = consecutive_threshold_reached + 1
+
+                if consecutive_threshold_reached == threshold_tries:
+                    stop = True
+                    if self._verbose:
+                        print("Abortion of the learning because the threshold has been reached the max number of times")
+
+            else:
+                self._rules.append(current_rule)
+                consecutive_threshold_reached = 0
+
+            if self._verbose:
+                print("Built rule : "+str(current_rule)+" ("+str(concerned_number)+" rows concerned, "+str(concerned_number/initial_size*100)+"%)")
+                if concerned_number < threshold:
+                    print("Canceled rule because coverage below threshold")
 
         print()
         print("Extracted rules : ")
 
         for rule in self._rules:
-            print(str(rule))
+            print(str(rule)+" ("+str(rule.concerned_examples)+" rows concerned)")
 
     def predict(self):
 

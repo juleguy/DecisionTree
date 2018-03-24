@@ -18,6 +18,17 @@ parser.add_argument("-missing", "--missing-values",
                     or 'most_common_replace'",
                     default='ignore')
 
+parser.add_argument("-threshold", "--low-threshold-coverage",
+                    help="stops learning after n times (default 5) the coverage (expressed as a number of rows)"
+                         " of the new rule is below this threshold",
+                    default=-1)
+
+parser.add_argument("-threshold-tries", "--threshold-tries",
+                    help="Number of consecutive times the coverage of a rule is allowed to be above the threshold"
+                         " before the learning is aborted",
+                    default=5)
+
+
 parser.add_argument("--target-col", help="name of the column that contains the target class name")
 
 parser.add_argument("--target-class", help="name of the target class")
@@ -37,7 +48,8 @@ foilProp.prediction_mode = (args.mode == "prediction")
 
 try:
     foilProp.fit(args.file, target_col_value=args.target_class,
-                 target_col_name=args.target_col, missing_values_strategy_str=args.missing_values)
+                 target_col_name=args.target_col, missing_values_strategy_str=args.missing_values,
+                 threshold=int(args.low_threshold_coverage), threshold_tries=int(args.threshold_tries))
 except FileNotFoundError:
     print("The file cannot be found")
     exit(1)
