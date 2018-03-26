@@ -22,6 +22,7 @@ class AbstractFoilProp(ABC):
         self._attribute_dictionary = {}
         self._target_col_name = None
         self._target_col_value_index = None
+        self._target_class_name = None
         self._col_names = []
 
         # Attributes storing the learning results
@@ -273,6 +274,10 @@ class FoilProp(AbstractFoilProp):
                     print("Canceled rule because coverage below threshold")
 
         print()
+        print("Target attribute : " + self._target_col_name)
+        print("Target class : " + self._target_class_name)
+        print()
+
         print("Extracted rules : ")
 
         for rule in self._rules:
@@ -525,6 +530,8 @@ class FoilProp(AbstractFoilProp):
 
             if not found_target_index:
                 raise NotFoundTargetCol
+
+        self._target_class_name = self._attributes_dictionary[self._target_col_name][self._target_col_value_index]
 
         # Creating the Neg and Pos dataframes
         for index_row, row in df_train_set.iterrows():
